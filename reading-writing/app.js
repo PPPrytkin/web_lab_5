@@ -7,27 +7,31 @@ app.use(bodyParser.json());
 
 let products = [];
 
-app.get('/products', (req, res) => {
-  res.send(products)
+app.route('/products')
+.get((req, res) => {
+res.json(products);
 })
-
-app.post('/products', function (req, res) {
-  let data = req.body
-  data.id = products.length + 1
-  products.push(data)
-  res.send(products[products.length - 1])
-});
-
-app.put('/products', function (req, res) {
-  products[req.body.id - 1].name = req.body.name
-  res.send(products[req.body.id - 1])
-});
-
-app.delete('/products/:id', function (req, res) {
-  const removed = products[req.body.id - 1]
-  products = products.filter(item => item.id !== req.body.id)
-  res.send(removed)
-});
+.post((req, res) => {
+const newProduct = { ...req.body, id: products.length + 1 }
+products = [...products, newProduct]
+res.json(newProduct);
+})
+.put((req, res) => {
+let updatedProduct;
+products = products.map(p => {
+if (p.id === req.body.id) {
+updatedProduct = { ...p, ...req.body };
+return updatedProduct;
+}
+return p;
+})
+res.json(updatedProduct);
+})
+.delete((req, res) => {
+const deletedProduct = products.find(p => p.id === +req.body.id);
+products = products.filter(p => p.id !== +req.body.id);
+res.json(deletedProduct);
+})
 
 app.listen(port, () => console.log(`Прослушивание на порту ${port}!`))
   
